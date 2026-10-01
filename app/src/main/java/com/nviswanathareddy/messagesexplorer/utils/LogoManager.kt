@@ -1,18 +1,27 @@
 package com.nviswanathareddy.messagesexplorer.utils
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.nviswanathareddy.messagesexplorer.data.LogoRepository
+
+data class LogoResolution(
+    val domain: String?,
+    val brandName: String?,
+)
+
 @Composable
-fun rememberLogoDomain(
+fun rememberLogoResolution(
     senderInfo: SenderInfo,
-    body: String
-): String? {
+    body: String,
+    logoRepository: LogoRepository,
+): LogoResolution {
     return remember(
         senderInfo.key,
-        body
+        logoRepository,
     ) {
-        resolveLogoDomain(
+        logoRepository.getLogoResolution(
             senderInfo = senderInfo,
-            body = body
+            body = body,
         )
     }
 }

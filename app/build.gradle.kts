@@ -40,13 +40,14 @@ android {
     }
   }
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
   buildFeatures {
     compose = true
     buildConfig = true
   }
+  buildToolsVersion = "36.0.0"
 }
 
 dependencies {
@@ -65,9 +66,11 @@ dependencies {
   implementation(libs.androidx.material3)
   implementation(libs.androidx.ui)
   testImplementation(libs.junit)
+  androidTestImplementation(platform(libs.androidx.compose.bom))
   androidTestImplementation(libs.androidx.compose.ui.test.junit4)
   androidTestImplementation(libs.androidx.espresso.core)
   androidTestImplementation(libs.androidx.junit)
+  debugImplementation(platform(libs.androidx.compose.bom))
   debugImplementation(libs.androidx.compose.ui.test.manifest)
   debugImplementation(libs.androidx.compose.ui.tooling)
 }

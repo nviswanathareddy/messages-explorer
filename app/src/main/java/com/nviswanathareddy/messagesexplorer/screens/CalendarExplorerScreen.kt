@@ -29,6 +29,7 @@ import com.nviswanathareddy.messagesexplorer.components.HeaderSection
 import com.nviswanathareddy.messagesexplorer.components.MessageSection
 import com.nviswanathareddy.messagesexplorer.components.PermissionCard
 import com.nviswanathareddy.messagesexplorer.components.SearchSection
+import com.nviswanathareddy.messagesexplorer.data.LogoRepository
 import com.nviswanathareddy.messagesexplorer.data.addDays
 import com.nviswanathareddy.messagesexplorer.data.readSmsForDate
 import com.nviswanathareddy.messagesexplorer.data.startOfDayMillis
@@ -51,6 +52,8 @@ fun CalendarExplorerScreen(
 ) {
   val context = LocalContext.current
   val palette = if (darkMode) DarkPalette else LightPalette
+  val logoRepository = remember { LogoRepository() }
+
   var hasSmsPermission by remember {
     mutableStateOf(
         ContextCompat.checkSelfPermission(
@@ -59,6 +62,7 @@ fun CalendarExplorerScreen(
         ) == PackageManager.PERMISSION_GRANTED
     )
   }
+
   var hasContactsPermission by remember {
     mutableStateOf(
         ContextCompat.checkSelfPermission(
@@ -67,6 +71,7 @@ fun CalendarExplorerScreen(
         ) == PackageManager.PERMISSION_GRANTED
     )
   }
+
   val permissionLauncher =
       rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
           permissions ->
@@ -76,6 +81,7 @@ fun CalendarExplorerScreen(
                     context,
                     Manifest.permission.READ_SMS,
                 ) == PackageManager.PERMISSION_GRANTED
+
         hasContactsPermission =
             permissions[Manifest.permission.READ_CONTACTS] == true ||
                 ContextCompat.checkSelfPermission(
@@ -83,10 +89,12 @@ fun CalendarExplorerScreen(
                     Manifest.permission.READ_CONTACTS,
                 ) == PackageManager.PERMISSION_GRANTED
       }
+
   val contactsPermissionLauncher =
       rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         hasContactsPermission = it
       }
+
   LaunchedEffect(
       hasSmsPermission,
       hasContactsPermission,
@@ -95,28 +103,37 @@ fun CalendarExplorerScreen(
       contactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
     }
   }
+
   var selectedDateMillis by remember {
     mutableLongStateOf(startOfDayMillis(Calendar.getInstance()))
   }
+
   var messages by remember {
     mutableStateOf<List<SmsMessage>>(emptyList())
   }
+
   var searchQuery by remember {
     mutableStateOf("")
   }
+
   var searchOpen by remember {
     mutableStateOf(false)
   }
+
   var sortOption by remember {
     mutableStateOf(MessageSort.NEWEST_FIRST)
   }
+
   var datePickerOpen by remember {
     mutableStateOf(false)
   }
+
   var expandedMessageId by remember {
     mutableStateOf<Long?>(null)
   }
+
   val listState = rememberLazyListState()
+
   LaunchedEffect(
       selectedDateMillis,
       hasSmsPermission,
@@ -133,7 +150,12 @@ fun CalendarExplorerScreen(
         } else {
           emptyList()
         }
+
+    logoRepository.buildSenderDomainMap(
+        messages = messages,
+    )
   }
+
   LaunchedEffect(
       sortOption,
       selectedDateMillis,
@@ -142,6 +164,7 @@ fun CalendarExplorerScreen(
     listState.scrollToItem(0)
     expandedMessageId = null
   }
+
   val filteredMessages =
       remember(
           messages,
@@ -175,15 +198,18 @@ fun CalendarExplorerScreen(
                         )
               }
             }
+
         when (sortOption) {
           MessageSort.NEWEST_FIRST ->
               searchedMessages.sortedByDescending {
                 it.timestamp
               }
+
           MessageSort.OLDEST_FIRST ->
               searchedMessages.sortedBy {
                 it.timestamp
               }
+
           MessageSort.SENDER_A_TO_Z ->
               searchedMessages.sortedWith(
                   compareBy(
@@ -197,6 +223,7 @@ fun CalendarExplorerScreen(
               )
         }
       }
+
   Scaffold(
       containerColor = palette.background,
       bottomBar = {
@@ -230,6 +257,7 @@ fun CalendarExplorerScreen(
             },
         )
       }
+
       Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         DateSection(
             selectedDateMillis = selectedDateMillis,
@@ -253,6 +281,7 @@ fun CalendarExplorerScreen(
               datePickerOpen = true
             },
         )
+
         MessageSection(
             filteredMessages = filteredMessages,
             listState = listState,
@@ -295,6 +324,7 @@ fun CalendarExplorerScreen(
             enableMonthPicker = false,
             showDate = false,
             messageMonths = emptySet(),
+            logoRepository = logoRepository,
             onTodayClick = {
               selectedDateMillis = startOfDayMillis(Calendar.getInstance())
             },
@@ -302,6 +332,7 @@ fun CalendarExplorerScreen(
       }
     }
   }
+
   if (datePickerOpen) {
     CustomDatePickerDialog(
         selectedDateMillis = selectedDateMillis,

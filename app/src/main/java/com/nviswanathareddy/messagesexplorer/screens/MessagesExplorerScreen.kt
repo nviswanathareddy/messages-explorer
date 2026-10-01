@@ -26,6 +26,7 @@ import com.nviswanathareddy.messagesexplorer.components.HeaderSection
 import com.nviswanathareddy.messagesexplorer.components.MessageSection
 import com.nviswanathareddy.messagesexplorer.components.PermissionCard
 import com.nviswanathareddy.messagesexplorer.components.SearchSection
+import com.nviswanathareddy.messagesexplorer.data.LogoRepository
 import com.nviswanathareddy.messagesexplorer.data.loadMessageMonths
 import com.nviswanathareddy.messagesexplorer.data.readAllSms
 import com.nviswanathareddy.messagesexplorer.model.MessageSort
@@ -46,6 +47,11 @@ fun MessagesExplorerScreen(
 ) {
   val context = LocalContext.current
   val palette = if (darkMode) DarkPalette else LightPalette
+
+  val logoRepository = remember {
+    LogoRepository()
+  }
+
   var hasSmsPermission by remember {
     mutableStateOf(
         ContextCompat.checkSelfPermission(
@@ -54,6 +60,7 @@ fun MessagesExplorerScreen(
         ) == PackageManager.PERMISSION_GRANTED
     )
   }
+
   var hasContactsPermission by remember {
     mutableStateOf(
         ContextCompat.checkSelfPermission(
@@ -62,6 +69,7 @@ fun MessagesExplorerScreen(
         ) == PackageManager.PERMISSION_GRANTED
     )
   }
+
   val permissionLauncher =
       rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
           permissions ->
@@ -71,6 +79,7 @@ fun MessagesExplorerScreen(
                     context,
                     Manifest.permission.READ_SMS,
                 ) == PackageManager.PERMISSION_GRANTED
+
         hasContactsPermission =
             permissions[Manifest.permission.READ_CONTACTS] == true ||
                 ContextCompat.checkSelfPermission(
@@ -78,10 +87,12 @@ fun MessagesExplorerScreen(
                     Manifest.permission.READ_CONTACTS,
                 ) == PackageManager.PERMISSION_GRANTED
       }
+
   val contactsPermissionLauncher =
       rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         hasContactsPermission = it
       }
+
   LaunchedEffect(
       hasSmsPermission,
       hasContactsPermission,
@@ -90,36 +101,51 @@ fun MessagesExplorerScreen(
       contactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
     }
   }
+
   var messages by remember {
     mutableStateOf<List<SmsMessage>>(emptyList())
   }
+
   var messageMonths by remember {
     mutableStateOf<Set<Pair<Int, Int>>>(emptySet())
   }
+
   var searchQuery by remember {
     mutableStateOf("")
   }
+
   var searchOpen by remember {
     mutableStateOf(false)
   }
+
   var sortOption by remember {
     mutableStateOf(MessageSort.NEWEST_FIRST)
   }
+
   var expandedMessageId by remember {
     mutableStateOf<Long?>(null)
   }
+
   val listState = rememberLazyListState()
+
   LaunchedEffect(
       hasSmsPermission,
       hasContactsPermission,
       refreshTrigger,
   ) {
     if (hasSmsPermission) {
-      messages =
+      val loadedMessages =
           readAllSms(
               context = context,
               hasContactsPermission = hasContactsPermission,
           )
+
+      messages = loadedMessages
+
+      logoRepository.buildSenderDomainMap(
+          messages = loadedMessages,
+      )
+
       messageMonths =
           loadMessageMonths(
               context = context,
@@ -128,8 +154,10 @@ fun MessagesExplorerScreen(
     } else {
       messages = emptyList()
       messageMonths = emptySet()
+      logoRepository.clearCache()
     }
   }
+
   LaunchedEffect(
       sortOption,
       searchQuery,
@@ -137,6 +165,7 @@ fun MessagesExplorerScreen(
     listState.scrollToItem(0)
     expandedMessageId = null
   }
+
   val filteredMessages =
       remember(
           messages,
@@ -170,15 +199,18 @@ fun MessagesExplorerScreen(
                         )
               }
             }
+
         when (sortOption) {
           MessageSort.NEWEST_FIRST ->
               searchedMessages.sortedByDescending {
                 it.timestamp
               }
+
           MessageSort.OLDEST_FIRST ->
               searchedMessages.sortedBy {
                 it.timestamp
               }
+
           MessageSort.SENDER_A_TO_Z ->
               searchedMessages.sortedWith(
                   compareBy(
@@ -192,6 +224,7 @@ fun MessagesExplorerScreen(
               )
         }
       }
+
   Scaffold(
       containerColor = palette.background,
       bottomBar = {
@@ -225,6 +258,7 @@ fun MessagesExplorerScreen(
             },
         )
       }
+
       Column(modifier = Modifier.fillMaxWidth().padding(horizontal = AppScreenHorizontalPadding)) {
         MessageSection(
             filteredMessages = filteredMessages,
@@ -268,6 +302,7 @@ fun MessagesExplorerScreen(
             enableMonthPicker = true,
             showDate = true,
             messageMonths = messageMonths,
+            logoRepository = logoRepository,
         )
       }
     }

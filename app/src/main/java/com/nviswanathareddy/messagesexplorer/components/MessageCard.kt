@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Patterns
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -27,6 +26,7 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.nviswanathareddy.messagesexplorer.data.LogoRepository
 import com.nviswanathareddy.messagesexplorer.model.SmsMessage
 import com.nviswanathareddy.messagesexplorer.utils.AppPalette
 import com.nviswanathareddy.messagesexplorer.utils.DarkPalette
@@ -62,8 +63,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val NeutralIconColor = Color(0xFF6B7280)
-private val NeutralIconBackground = Color(0xFFF0F1F3)
 private val CreditColor = Color(0xFF16A34A)
 private val CreditBackground = Color(0xFFE3F7EA)
 private val DebitColor = Color(0xFFDC2626)
@@ -76,10 +75,12 @@ fun MessageCard(
     darkMode: Boolean,
     expanded: Boolean,
     showDate: Boolean,
+    logoRepository: LogoRepository,
     onClick: () -> Unit,
 ) {
   val context = LocalContext.current
   val palette = if (darkMode) DarkPalette else LightPalette
+
   val category =
       remember(message.id) {
         detectCategory(
@@ -87,6 +88,7 @@ fun MessageCard(
             message.body,
         )
       }
+
   val transaction =
       remember(message.id) {
         detectTransaction(
@@ -94,6 +96,7 @@ fun MessageCard(
             message.body,
         )
       }
+
   val senderInfo =
       remember(message.id) {
         resolveSenderInfo(
@@ -101,6 +104,7 @@ fun MessageCard(
             body = message.body,
         )
       }
+
   val dateTimeLabel =
       remember(
           message.timestamp,
@@ -112,12 +116,14 @@ fun MessageCard(
             } else {
               "hh:mm a"
             }
+
         SimpleDateFormat(
                 pattern,
                 Locale.ENGLISH,
             )
             .format(Date(message.timestamp))
       }
+
   Card(
       modifier =
           Modifier.fillMaxWidth()
@@ -154,9 +160,12 @@ fun MessageCard(
       ) {
         SenderLogo(
             senderInfo = senderInfo,
-            body = message.body
+            body = message.body,
+            logoRepository = logoRepository,
         )
+
         Spacer(modifier = Modifier.width(12.dp))
+
         Text(
             text = message.sender,
             modifier =
@@ -175,7 +184,9 @@ fun MessageCard(
             fontWeight = FontWeight.Bold,
             color = palette.primaryDark,
         )
+
         Spacer(modifier = Modifier.width(8.dp))
+
         Text(
             text = dateTimeLabel,
             maxLines = 1,
@@ -188,6 +199,7 @@ fun MessageCard(
             fontWeight = FontWeight.Medium,
         )
       }
+
       MessageBody(
           body = message.body,
           fontScale = fontScale,
@@ -201,10 +213,12 @@ fun MessageCard(
             )
           },
       )
+
       HorizontalDivider(
           color = palette.secondaryText.copy(alpha = 0.12f),
           thickness = 1.dp,
       )
+
       Row(
           modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
           verticalAlignment = Alignment.CenterVertically,
@@ -214,7 +228,9 @@ fun MessageCard(
             fontScale = fontScale,
             palette = palette,
         )
+
         Spacer(modifier = Modifier.weight(1f))
+
         Text(
             text =
                 if (expanded) {
@@ -231,8 +247,10 @@ fun MessageCard(
             fontWeight = FontWeight.Medium,
             maxLines = 1,
         )
+
         Spacer(modifier = Modifier.width(2.dp))
-        androidx.compose.material3.Icon(
+
+        Icon(
             imageVector =
                 if (expanded) {
                   Icons.Outlined.ExpandLess
@@ -257,18 +275,21 @@ private fun TransactionSummary(
   if (transaction.type == TransactionType.NONE) {
     return
   }
+
   val typeColor =
       when (transaction.type) {
         TransactionType.CREDIT -> CreditColor
         TransactionType.DEBIT -> DebitColor
         TransactionType.NONE -> palette.secondaryText
       }
+
   val typeBackground =
       when (transaction.type) {
         TransactionType.CREDIT -> CreditBackground
         TransactionType.DEBIT -> DebitBackground
-        TransactionType.NONE -> NeutralIconBackground
+        TransactionType.NONE -> Color.Transparent
       }
+
   Row(
       verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -290,10 +311,13 @@ private fun TransactionSummary(
         )
       }
     }
+
     if (transaction.displayText.isNotBlank()) {
       val detailText = transaction.displayText.removePrefix(transaction.shortType).trim()
+
       if (detailText.isNotBlank()) {
         Spacer(modifier = Modifier.width(6.dp))
+
         Text(
             text = detailText,
             maxLines = 1,
@@ -321,9 +345,11 @@ private fun MessageBody(
     onLongPress: () -> Unit,
 ) {
   val context = LocalContext.current
+
   var textLayoutResult by remember {
     mutableStateOf<TextLayoutResult?>(null)
   }
+
   val annotatedText =
       remember(
           body,
@@ -334,6 +360,7 @@ private fun MessageBody(
             palette = palette,
         )
       }
+
   Text(
       text = annotatedText,
       modifier =
@@ -345,6 +372,7 @@ private fun MessageBody(
                 onTap = { position ->
                   textLayoutResult?.let { layoutResult ->
                     val offset = layoutResult.getOffsetForPosition(position)
+
                     val annotation =
                         annotatedText
                             .getStringAnnotations(
@@ -353,6 +381,7 @@ private fun MessageBody(
                                 end = offset,
                             )
                             .firstOrNull()
+
                     if (annotation != null) {
                       openUrlInChrome(
                           context = context,
@@ -407,9 +436,11 @@ private fun buildMessageAnnotatedString(
   return buildAnnotatedString {
     val matcher = Patterns.WEB_URL.matcher(body)
     var currentIndex = 0
+
     while (matcher.find()) {
       val start = matcher.start()
       val end = matcher.end()
+
       if (start > currentIndex) {
         append(
             body.substring(
@@ -418,32 +449,40 @@ private fun buildMessageAnnotatedString(
             )
         )
       }
+
       val detectedUrl =
           body.substring(
               start,
               end,
           )
+
       val url =
           if (detectedUrl.startsWith("http://") || detectedUrl.startsWith("https://")) {
             detectedUrl
           } else {
             "https://$detectedUrl"
           }
+
       pushStringAnnotation(
           tag = "URL",
           annotation = url,
       )
+
       pushStyle(
           SpanStyle(
               color = palette.primary,
               textDecoration = TextDecoration.Underline,
           )
       )
+
       append(detectedUrl)
+
       pop()
       pop()
+
       currentIndex = end
     }
+
     if (currentIndex < body.length) {
       append(body.substring(currentIndex))
     }
@@ -462,6 +501,7 @@ private fun openUrlInChrome(
           .apply {
             setPackage("com.android.chrome")
           }
+
   try {
     context.startActivity(chromeIntent)
   } catch (_: Exception) {
@@ -479,16 +519,18 @@ private fun copyMessageToClipboard(
     message: String,
 ) {
   val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
   clipboard.setPrimaryClip(
       ClipData.newPlainText(
           "Message",
           message,
       )
   )
-  Toast.makeText(
+
+  android.widget.Toast.makeText(
           context,
           "Message copied",
-          Toast.LENGTH_SHORT,
+          android.widget.Toast.LENGTH_SHORT,
       )
       .show()
 }

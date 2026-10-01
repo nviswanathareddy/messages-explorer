@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nviswanathareddy.messagesexplorer.data.LogoRepository
 import com.nviswanathareddy.messagesexplorer.dialogs.MonthYearPickerDialog
 import com.nviswanathareddy.messagesexplorer.dialogs.SortDialog
 import com.nviswanathareddy.messagesexplorer.model.MessageSort
@@ -43,17 +44,21 @@ fun MessageSection(
     enableMonthPicker: Boolean,
     showDate: Boolean,
     messageMonths: Set<Pair<Int, Int>>,
+    logoRepository: LogoRepository,
     onTodayClick: () -> Unit = {},
 ) {
   var sortDialogOpen by remember {
     mutableStateOf(false)
   }
+
   var monthPickerOpen by remember {
     mutableStateOf(false)
   }
+
   var selectedMonthMillis by remember {
     mutableStateOf<Long?>(null)
   }
+
   val selectedMonthLabel =
       remember(selectedMonthMillis) {
         selectedMonthMillis?.let {
@@ -64,25 +69,41 @@ fun MessageSection(
               .format(Date(it))
         } ?: "All Months"
       }
+
   val displayedMessages =
       if (enableMonthPicker && selectedMonthMillis != null) {
         val selectedCalendar =
             Calendar.getInstance().apply {
               timeInMillis = selectedMonthMillis!!
             }
+
         filteredMessages.filter { message ->
           val messageCalendar =
               Calendar.getInstance().apply {
                 timeInMillis = message.timestamp
               }
+
           messageCalendar.get(Calendar.YEAR) == selectedCalendar.get(Calendar.YEAR) &&
               messageCalendar.get(Calendar.MONTH) == selectedCalendar.get(Calendar.MONTH)
         }
       } else {
         filteredMessages
       }
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Spacer(modifier = Modifier.height(if (enableMonthPicker) 4.dp else 12.dp))
+
+  Column(
+      modifier = Modifier.fillMaxWidth(),
+  ) {
+    Spacer(
+        modifier =
+            Modifier.height(
+                if (enableMonthPicker) {
+                  4.dp
+                } else {
+                  12.dp
+                }
+            )
+    )
+
     MessageFilterBar(
         messageCount = displayedMessages.size,
         centerText =
@@ -105,6 +126,7 @@ fun MessageSection(
           sortDialogOpen = true
         },
     )
+
     if (!hasSmsPermission) {
       onPermissionRequired()
     } else if (displayedMessages.isEmpty()) {
@@ -112,6 +134,7 @@ fun MessageSection(
       emptyContent()
     } else {
       Spacer(modifier = Modifier.height(12.dp))
+
       LazyColumn(
           state = listState,
           modifier = Modifier.fillMaxWidth(),
@@ -129,6 +152,7 @@ fun MessageSection(
               darkMode = darkMode,
               expanded = expandedMessageId == message.id,
               showDate = showDate,
+              logoRepository = logoRepository,
               onClick = {
                 onMessageClick(message.id)
               },
@@ -137,6 +161,7 @@ fun MessageSection(
       }
     }
   }
+
   if (enableMonthPicker && monthPickerOpen) {
     MonthYearPickerDialog(
         selectedMonthMillis = selectedMonthMillis,
@@ -152,6 +177,7 @@ fun MessageSection(
         },
     )
   }
+
   if (sortDialogOpen) {
     SortDialog(
         sortOption = sortOption,
