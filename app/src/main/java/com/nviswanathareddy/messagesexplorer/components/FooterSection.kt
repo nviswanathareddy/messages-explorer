@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,8 +24,8 @@ import com.nviswanathareddy.messagesexplorer.utils.AppPalette
 import com.nviswanathareddy.messagesexplorer.utils.scaledSp
 
 enum class FooterTab {
-    MESSAGES,
-    CALENDAR
+  MESSAGES,
+  CALENDAR,
 }
 
 @Composable
@@ -33,45 +33,41 @@ fun FooterSection(
     selectedTab: FooterTab,
     onTabSelected: (FooterTab) -> Unit,
     palette: AppPalette,
-    fontScale: Float
+    fontScale: Float,
 ) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding(),
-        color = Color.White,
-        tonalElevation = 0.dp
+  Surface(
+      modifier = Modifier.fillMaxWidth().navigationBarsPadding(),
+      color = Color.White,
+      tonalElevation = 0.dp,
+  ) {
+    Row(
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            FooterItem(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.Chat,
-                label = "Messages",
-                selected = selectedTab == FooterTab.MESSAGES,
-                onClick = {
-                    onTabSelected(FooterTab.MESSAGES)
-                },
-                palette = palette,
-                fontScale = fontScale
-            )
-            FooterItem(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.CalendarToday,
-                label = "Calendar",
-                selected = selectedTab == FooterTab.CALENDAR,
-                onClick = {
-                    onTabSelected(FooterTab.CALENDAR)
-                },
-                palette = palette,
-                fontScale = fontScale
-            )
-        }
+      FooterItem(
+          modifier = Modifier.weight(1f),
+          icon = Icons.AutoMirrored.Outlined.Chat,
+          label = "Messages",
+          selected = selectedTab == FooterTab.MESSAGES,
+          onClick = {
+            onTabSelected(FooterTab.MESSAGES)
+          },
+          palette = palette,
+          fontScale = fontScale,
+      )
+      FooterItem(
+          modifier = Modifier.weight(1f),
+          icon = Icons.Outlined.CalendarToday,
+          label = "Calendar",
+          selected = selectedTab == FooterTab.CALENDAR,
+          onClick = {
+            onTabSelected(FooterTab.CALENDAR)
+          },
+          palette = palette,
+          fontScale = fontScale,
+      )
     }
+  }
 }
 
 @Composable
@@ -82,48 +78,47 @@ private fun FooterItem(
     selected: Boolean,
     onClick: () -> Unit,
     palette: AppPalette,
-    fontScale: Float
+    fontScale: Float,
 ) {
-    val backgroundColor = if (selected) {
+  val backgroundColor =
+      if (selected) {
         Color(0xFFDBE8FD)
-    } else {
+      } else {
         Color.Transparent
-    }
-
-    val contentColor = if (selected) {
+      }
+  val contentColor =
+      if (selected) {
         Color(0xFF004AC6)
-    } else {
+      } else {
         palette.primaryDark
-    }
-
-    Surface(
-        modifier = modifier
-            .height(64.dp)
-            .clickable(onClick = onClick),
-        color = backgroundColor,
-        tonalElevation = 0.dp
+      }
+  Surface(
+      modifier = modifier.height(56.dp).clickable(onClick = onClick),
+      color = backgroundColor,
+      tonalElevation = 0.dp,
+  ) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = contentColor,
-                modifier = Modifier.height(22.dp)
-            )
-            Text(
-                text = label,
-                color = contentColor,
-                fontSize = scaledSp(12f, fontScale),
-                fontWeight = if (selected) {
-                    FontWeight.SemiBold
-                } else {
-                    FontWeight.Medium
-                }
-            )
-        }
+      Icon(
+          imageVector = icon,
+          contentDescription = label,
+          tint = contentColor,
+          modifier = Modifier.height(21.dp),
+      )
+      Text(
+          text = label,
+          color = contentColor,
+          fontSize = scaledSp(12f, fontScale),
+          fontWeight =
+              if (selected) {
+                FontWeight.SemiBold
+              } else {
+                FontWeight.Medium
+              },
+      )
     }
+  }
 }

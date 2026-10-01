@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,10 +42,23 @@ fun DateSection(
     onNextDay: () -> Unit,
     onDateClick: () -> Unit
 ) {
+    val locale = LocalLocale.current.platformLocale
+    val weekdayFormatter = remember(locale) {
+        SimpleDateFormat("EEEE", locale)
+    }
+    val dateFormatter = remember(locale) {
+        SimpleDateFormat("dd MMMM yyyy", locale)
+    }
+    val weekday = weekdayFormatter
+        .format(Date(selectedDateMillis))
+        .uppercase(locale)
+    val dateLabel = dateFormatter.format(Date(selectedDateMillis))
+    Spacer(modifier = Modifier.height(4.dp))
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp),
+            .height(56.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
@@ -58,23 +73,22 @@ fun DateSection(
         ) {
             Box(
                 modifier = Modifier
-                    .width(56.dp)
-                    .height(72.dp)
+                    .width(52.dp)
+                    .height(56.dp)
                     .clickable(onClick = onPreviousDay),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Outlined.ChevronLeft,
                     contentDescription = "Previous Day",
-                    modifier = Modifier.width(22.dp),
+                    modifier = Modifier.width(20.dp),
                     tint = palette.primaryDark
                 )
             }
-
             Surface(
                 modifier = Modifier
                     .weight(1f)
-                    .height(72.dp)
+                    .height(56.dp)
                     .clickable(onClick = onDateClick),
                 color = Color(0xFFEFF4FC),
                 tonalElevation = 0.dp
@@ -82,54 +96,38 @@ fun DateSection(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = SimpleDateFormat(
-                            "EEEE",
-                            LocalLocale.current.platformLocale
-                        )
-                            .format(Date(selectedDateMillis))
-                            .uppercase(LocalLocale.current.platformLocale),
+                        text = weekday,
                         color = Color(0xFF54607B),
-                        fontSize = scaledSp(
-                            11f,
-                            fontScale
-                        ),
+                        fontSize = scaledSp(10f, fontScale),
                         fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 1.5.sp
+                        letterSpacing = 1.3.sp
                     )
-
                     Text(
-                        text = SimpleDateFormat(
-                            "dd MMMM yyyy",
-                            LocalLocale.current.platformLocale
-                        ).format(Date(selectedDateMillis)),
+                        text = dateLabel,
                         color = Color(0xFF0A1C36),
-                        fontSize = scaledSp(
-                            20f,
-                            fontScale
-                        ),
+                        fontSize = scaledSp(18f, fontScale),
                         fontWeight = FontWeight.Bold,
                         letterSpacing = (-0.2).sp,
                         modifier = Modifier.padding(top = 0.5.dp)
                     )
                 }
             }
-
             Box(
                 modifier = Modifier
-                    .width(56.dp)
-                    .height(72.dp)
+                    .width(52.dp)
+                    .height(56.dp)
                     .clickable(onClick = onNextDay),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Outlined.ChevronRight,
                     contentDescription = "Next Day",
-                    modifier = Modifier.width(22.dp),
+                    modifier = Modifier.width(20.dp),
                     tint = palette.primaryDark
                 )
             }

@@ -27,286 +27,209 @@ import com.nviswanathareddy.messagesexplorer.utils.PreferenceDarkMode
 import com.nviswanathareddy.messagesexplorer.utils.PreferenceFontScale
 import com.nviswanathareddy.messagesexplorer.utils.PreferencesName
 
-private const val PreferenceThemeMode =
-    "preference_theme_mode"
-
-private const val PreferenceTimeFormat =
-    "preference_time_format"
+private const val PreferenceThemeMode = "preference_theme_mode"
+private const val PreferenceTimeFormat = "preference_time_format"
 
 enum class AppThemeMode {
-    LIGHT,
-    DARK,
-    SYSTEM
+  LIGHT,
+  DARK,
+  SYSTEM,
 }
 
 enum class AppTimeFormat {
-    TWELVE_HOUR,
-    TWENTY_FOUR_HOUR
+  TWELVE_HOUR,
+  TWENTY_FOUR_HOUR,
 }
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        enableEdgeToEdge()
-
-        WindowCompat.getInsetsController(
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    enableEdgeToEdge()
+    WindowCompat.getInsetsController(
             window,
-            window.decorView
-        ).isAppearanceLightStatusBars = true
-
-        setContent {
-            MessagesExplorerSettingsHost()
-        }
+            window.decorView,
+        )
+        .isAppearanceLightStatusBars = true
+    setContent {
+      MessagesExplorerSettingsHost()
     }
+  }
 }
 
 @Composable
 private fun MessagesExplorerSettingsHost() {
-    val context = LocalContext.current
-
-    val preferences = remember {
-        context.getSharedPreferences(
-            PreferencesName,
-            Context.MODE_PRIVATE
+  val context = LocalContext.current
+  val preferences = remember {
+    context.getSharedPreferences(
+        PreferencesName,
+        Context.MODE_PRIVATE,
+    )
+  }
+  val systemDarkMode = isSystemInDarkTheme()
+  var themeMode by remember {
+    mutableStateOf(loadThemeMode(preferences))
+  }
+  var fontScale by remember {
+    mutableFloatStateOf(
+        preferences.getFloat(
+            PreferenceFontScale,
+            1f,
         )
+    )
+  }
+  var timeFormat by remember {
+    mutableStateOf(loadTimeFormat(preferences))
+  }
+  var selectedTab by remember {
+    mutableStateOf(FooterTab.MESSAGES)
+  }
+  var settingsDialogOpen by remember {
+    mutableStateOf(false)
+  }
+  var refreshTrigger by remember {
+    mutableIntStateOf(0)
+  }
+  val darkMode =
+      when (themeMode) {
+        AppThemeMode.LIGHT -> false
+        AppThemeMode.DARK -> true
+        AppThemeMode.SYSTEM -> systemDarkMode
+      }
+  val activity = context as? Activity
+  SideEffect {
+    activity?.window?.let { window ->
+      val controller =
+          WindowCompat.getInsetsController(
+              window,
+              window.decorView,
+          )
+      controller.isAppearanceLightStatusBars = !darkMode
+      controller.isAppearanceLightNavigationBars = !darkMode
+      controller.systemBarsBehavior =
+          androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
-
-    val systemDarkMode =
-        isSystemInDarkTheme()
-
-    var themeMode by remember {
-        mutableStateOf(
-            loadThemeMode(
-                preferences
-            )
+  }
+  MessagesExplorerTheme(darkTheme = darkMode) {
+    when (selectedTab) {
+      FooterTab.MESSAGES -> {
+        MessagesExplorerScreen(
+            darkMode = darkMode,
+            fontScale = fontScale,
+            refreshTrigger = refreshTrigger,
+            onSettingsClick = {
+              settingsDialogOpen = true
+            },
+            onTabSelected = { tab ->
+              selectedTab = tab
+            },
         )
-    }
-
-    var fontScale by remember {
-        mutableFloatStateOf(
-            preferences.getFloat(
-                PreferenceFontScale,
-                1f
-            )
+      }
+      FooterTab.CALENDAR -> {
+        CalendarExplorerScreen(
+            darkMode = darkMode,
+            fontScale = fontScale,
+            refreshTrigger = refreshTrigger,
+            onSettingsClick = {
+              settingsDialogOpen = true
+            },
+            onTabSelected = { tab ->
+              selectedTab = tab
+            },
         )
+      }
     }
-
-    var timeFormat by remember {
-        mutableStateOf(
-            loadTimeFormat(
-                preferences
-            )
-        )
-    }
-
-    var selectedTab by remember {
-        mutableStateOf(
-            FooterTab.MESSAGES
-        )
-    }
-
-    var settingsDialogOpen by remember {
-        mutableStateOf(false)
-    }
-
-    var refreshTrigger by remember {
-        mutableIntStateOf(0)
-    }
-
-    val darkMode =
-        when (themeMode) {
-            AppThemeMode.LIGHT -> false
-            AppThemeMode.DARK -> true
-            AppThemeMode.SYSTEM -> systemDarkMode
-        }
-
-    val activity =
-        context as? Activity
-
-    SideEffect {
-        activity?.window?.let { window ->
-
-            val controller =
-                WindowCompat.getInsetsController(
-                    window,
-                    window.decorView
-                )
-
-            controller.isAppearanceLightStatusBars =
-                !darkMode
-
-            controller.isAppearanceLightNavigationBars =
-                !darkMode
-
-            controller.systemBarsBehavior =
-                androidx.core.view.WindowInsetsControllerCompat
-                    .BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
-    }
-
-    MessagesExplorerTheme(
-        darkTheme = darkMode
-    ) {
-        when (selectedTab) {
-
-            FooterTab.MESSAGES -> {
-                MessagesExplorerScreen(
-                    darkMode = darkMode,
-                    fontScale = fontScale,
-                    refreshTrigger = refreshTrigger,
-                    onSettingsClick = {
-                        settingsDialogOpen = true
-                    },
-                    onTabSelected = { tab ->
-                        selectedTab = tab
-                    }
-                )
+    if (settingsDialogOpen) {
+      SettingsDialog(
+          darkMode = darkMode,
+          fontScale = fontScale,
+          themeMode = themeMode,
+          timeFormat = timeFormat,
+          onThemeModeChange = { newThemeMode ->
+            themeMode = newThemeMode
+            preferences.edit {
+              putString(
+                  PreferenceThemeMode,
+                  newThemeMode.name,
+              )
+              putBoolean(
+                  PreferenceDarkMode,
+                  newThemeMode == AppThemeMode.DARK,
+              )
             }
-
-            FooterTab.CALENDAR -> {
-                CalendarExplorerScreen(
-                    darkMode = darkMode,
-                    fontScale = fontScale,
-                    refreshTrigger = refreshTrigger,
-                    onSettingsClick = {
-                        settingsDialogOpen = true
-                    },
-                    onTabSelected = { tab ->
-                        selectedTab = tab
-                    }
+          },
+          onFontScaleChange = { newScale ->
+            val scale =
+                newScale.coerceIn(
+                    0.8f,
+                    1.4f,
                 )
+            fontScale = scale
+            preferences.edit {
+              putFloat(
+                  PreferenceFontScale,
+                  scale,
+              )
             }
-        }
-
-        if (settingsDialogOpen) {
-            SettingsDialog(
-                darkMode = darkMode,
-                fontScale = fontScale,
-                themeMode = themeMode,
-                timeFormat = timeFormat,
-                onThemeModeChange = { newThemeMode ->
-
-                    themeMode =
-                        newThemeMode
-
-                    preferences.edit {
-                        putString(
-                            PreferenceThemeMode,
-                            newThemeMode.name
-                        )
-
-                        putBoolean(
-                            PreferenceDarkMode,
-                            newThemeMode == AppThemeMode.DARK
-                        )
-                    }
-                },
-                onFontScaleChange = { newScale ->
-
-                    val scale =
-                        newScale.coerceIn(
-                            0.8f,
-                            1.4f
-                        )
-
-                    fontScale =
-                        scale
-
-                    preferences.edit {
-                        putFloat(
-                            PreferenceFontScale,
-                            scale
-                        )
-                    }
-                },
-                onTimeFormatChange = { newTimeFormat ->
-
-                    timeFormat =
-                        newTimeFormat
-
-                    preferences.edit {
-                        putString(
-                            PreferenceTimeFormat,
-                            newTimeFormat.name
-                        )
-                    }
-                },
-                onRefresh = {
-
-                    refreshTrigger++
-
-                    settingsDialogOpen =
-                        false
-                },
-                onDismiss = {
-                    settingsDialogOpen =
-                        false
-                }
-            )
-        }
+          },
+          onTimeFormatChange = { newTimeFormat ->
+            timeFormat = newTimeFormat
+            preferences.edit {
+              putString(
+                  PreferenceTimeFormat,
+                  newTimeFormat.name,
+              )
+            }
+          },
+          onRefresh = {
+            refreshTrigger++
+            settingsDialogOpen = false
+          },
+          onDismiss = {
+            settingsDialogOpen = false
+          },
+      )
     }
+  }
 }
 
-private fun loadThemeMode(
-    preferences: android.content.SharedPreferences
-): AppThemeMode {
-
-    val savedTheme =
-        preferences.getString(
-            PreferenceThemeMode,
-            null
-        )
-
-    if (savedTheme != null) {
-        return try {
-            AppThemeMode.valueOf(
-                savedTheme
-            )
-        } catch (
-            _: IllegalArgumentException
-        ) {
-            AppThemeMode.LIGHT
-        }
+private fun loadThemeMode(preferences: android.content.SharedPreferences): AppThemeMode {
+  val savedTheme =
+      preferences.getString(
+          PreferenceThemeMode,
+          null,
+      )
+  if (savedTheme != null) {
+    return try {
+      AppThemeMode.valueOf(savedTheme)
+    } catch (_: IllegalArgumentException) {
+      AppThemeMode.LIGHT
     }
-
-    /*
-     * Backward compatibility with the
-     * existing PreferenceDarkMode setting.
-     */
-    return if (
-        preferences.getBoolean(
-            PreferenceDarkMode,
-            false
-        )
-    ) {
-        AppThemeMode.DARK
-    } else {
-        AppThemeMode.LIGHT
-    }
+  }
+  return if (
+      preferences.getBoolean(
+          PreferenceDarkMode,
+          false,
+      )
+  ) {
+    AppThemeMode.DARK
+  } else {
+    AppThemeMode.LIGHT
+  }
 }
 
-private fun loadTimeFormat(
-    preferences: android.content.SharedPreferences
-): AppTimeFormat {
-
-    val savedFormat =
-        preferences.getString(
-            PreferenceTimeFormat,
-            null
-        )
-
-    return if (savedFormat != null) {
-        try {
-            AppTimeFormat.valueOf(
-                savedFormat
-            )
-        } catch (
-            _: IllegalArgumentException
-        ) {
-            AppTimeFormat.TWELVE_HOUR
-        }
-    } else {
-        AppTimeFormat.TWELVE_HOUR
+private fun loadTimeFormat(preferences: android.content.SharedPreferences): AppTimeFormat {
+  val savedFormat =
+      preferences.getString(
+          PreferenceTimeFormat,
+          null,
+      )
+  return if (savedFormat != null) {
+    try {
+      AppTimeFormat.valueOf(savedFormat)
+    } catch (_: IllegalArgumentException) {
+      AppTimeFormat.TWELVE_HOUR
     }
+  } else {
+    AppTimeFormat.TWELVE_HOUR
+  }
 }

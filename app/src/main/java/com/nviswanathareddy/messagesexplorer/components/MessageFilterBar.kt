@@ -1,12 +1,13 @@
 package com.nviswanathareddy.messagesexplorer.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
@@ -32,174 +33,105 @@ fun MessageFilterBar(
     fontScale: Float,
     sortOption: MessageSort,
     onCenterClick: () -> Unit,
-    onSortClick: () -> Unit
+    onSortClick: () -> Unit,
 ) {
+  Surface(
+      modifier = Modifier.fillMaxWidth().height(40.dp),
+      shape = RoundedCornerShape(8.dp),
+      color = palette.controlBackground,
+      border =
+          BorderStroke(
+              1.dp,
+              palette.secondaryText.copy(alpha = 0.12f),
+          ),
+  ) {
     Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = 4.dp,
-                    vertical = 4.dp
-                ),
-        verticalAlignment =
-            Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
+      Surface(
+          modifier =
+              Modifier.weight(1f).height(40.dp).clickable {
+                onCenterClick()
+              },
+          color = Color.Transparent,
+      ) {
         Row(
-            modifier =
-                Modifier.weight(1f),
-            verticalAlignment =
-                Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = "ALL MESSAGES",
-                color = palette.secondaryText,
-                fontSize =
-                    scaledSp(
-                        12f,
-                        fontScale
-                    ),
-                fontWeight =
-                    FontWeight.SemiBold
-            )
-
-            Spacer(
-                modifier =
-                    Modifier.width(8.dp)
-            )
-
-            Surface(
-                shape =
-                    RoundedCornerShape(50.dp),
-                color =
-                    palette.dateControlBackground
-            ) {
-                Text(
-                    text = messageCount.toString(),
-                    modifier =
-                        Modifier.padding(
-                            horizontal = 9.dp,
-                            vertical = 3.dp
-                        ),
-                    color =
-                        palette.primaryDark,
-                    fontSize =
-                        scaledSp(
-                            11f,
-                            fontScale
-                        ),
-                    fontWeight =
-                        FontWeight.Bold
-                )
-            }
+          Icon(
+              imageVector = Icons.Outlined.CalendarToday,
+              contentDescription = "Select date or month",
+              modifier = Modifier.size(16.dp),
+              tint = palette.primary,
+          )
+          Text(
+              text = centerText,
+              modifier = Modifier.padding(start = 5.dp),
+              maxLines = 1,
+              color = palette.primary,
+              fontSize = scaledSp(12f, fontScale),
+              fontWeight = FontWeight.SemiBold,
+          )
         }
-
-        Surface(
-            modifier =
-                Modifier.clickable {
-                    onCenterClick()
-                },
-            shape =
-                RoundedCornerShape(9.dp),
-            color =
-                palette.dateControlBackground
+      }
+      Surface(
+          modifier = Modifier.height(40.dp).weight(1f),
+          color = palette.primary,
+          border =
+              BorderStroke(
+                  1.dp,
+                  palette.secondaryText.copy(alpha = 0.12f),
+              ),
+      ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier =
-                    Modifier.padding(
-                        horizontal = 10.dp,
-                        vertical = 6.dp
-                    ),
-                verticalAlignment =
-                    Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector =
-                        Icons.Outlined.CalendarToday,
-                    contentDescription =
-                        null,
-                    tint =
-                        palette.primary,
-                    modifier =
-                        Modifier.size(16.dp)
-                )
-
-                Spacer(
-                    modifier =
-                        Modifier.width(6.dp)
-                )
-
-                Text(
-                    text = centerText,
-                    color =
-                        palette.primary,
-                    fontSize =
-                        scaledSp(
-                            12f,
-                            fontScale
-                        ),
-                    fontWeight =
-                        FontWeight.SemiBold
-                )
-            }
+          Text(
+              text = messageCount.toString(),
+              color = Color.White,
+              fontSize = scaledSp(16f, fontScale),
+              fontWeight = FontWeight.Bold,
+          )
         }
-
-        Surface(
-            modifier =
-                Modifier.clickable {
-                    onSortClick()
-                },
-            color =
-                Color.Transparent
+      }
+      Surface(
+          modifier =
+              Modifier.weight(1f).height(40.dp).clickable {
+                onSortClick()
+              },
+          color = Color.Transparent,
+      ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier =
-                    Modifier.padding(
-                        horizontal = 8.dp,
-                        vertical = 6.dp
-                    ),
-                verticalAlignment =
-                    Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector =
-                        Icons.Outlined.SwapVert,
-                    contentDescription =
-                        "Sort",
-                    tint =
-                        palette.primary,
-                    modifier =
-                        Modifier.size(16.dp)
-                )
-
-                Spacer(
-                    modifier =
-                        Modifier.width(4.dp)
-                )
-
-                Text(
-                    text =
-                        when (sortOption) {
-                            MessageSort.NEWEST_FIRST ->
-                                "Newest first"
-
-                            MessageSort.OLDEST_FIRST ->
-                                "Oldest first"
-
-                            MessageSort.SENDER_A_TO_Z ->
-                                "Sender A-Z"
-                        },
-                    color =
-                        palette.secondaryText,
-                    fontSize =
-                        scaledSp(
-                            12f,
-                            fontScale
-                        ),
-                    fontWeight =
-                        FontWeight.Medium
-                )
-            }
+          Icon(
+              imageVector = Icons.Outlined.SwapVert,
+              contentDescription = "Sort messages",
+              modifier = Modifier.size(16.dp),
+              tint = palette.primary,
+          )
+          Text(
+              text =
+                  when (sortOption) {
+                    MessageSort.NEWEST_FIRST -> "Newest first"
+                    MessageSort.OLDEST_FIRST -> "Oldest first"
+                    MessageSort.SENDER_A_TO_Z -> "Sender A-Z"
+                  },
+              modifier = Modifier.padding(start = 5.dp),
+              maxLines = 1,
+              color = palette.primary,
+              fontSize = scaledSp(12f, fontScale),
+              fontWeight = FontWeight.SemiBold,
+          )
         }
+      }
     }
+  }
 }

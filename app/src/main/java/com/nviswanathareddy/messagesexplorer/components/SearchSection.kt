@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
@@ -31,60 +31,64 @@ fun SearchSection(
     onQueryChange: (String) -> Unit,
     palette: AppPalette,
     fontScale: Float,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = AppScreenHorizontalPadding, vertical = 10.dp),
-        shape = RoundedCornerShape(AppPillRadius),
-        color = palette.controlBackground
+  Surface(
+      modifier =
+          Modifier.fillMaxWidth()
+              .padding(horizontal = AppScreenHorizontalPadding, vertical = 10.dp),
+      shape = RoundedCornerShape(AppPillRadius),
+      color = palette.controlBackground,
+  ) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 3.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onClose) {
-                Icon(
-                    Icons.Outlined.ArrowBack,
-                    "Back",
-                    tint = palette.primaryDark
-                )
-            }
-            Icon(Icons.Outlined.Search, null, tint = palette.secondaryText)
-            BasicTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 10.dp),
-                singleLine = true,
-                textStyle = TextStyle(
-                    color = palette.primaryDark, fontSize = scaledSp(
-                        AppFontSearch,
-                        fontScale
-                    )
-                ),
-                cursorBrush = SolidColor(palette.primary),
-                decorationBox = { inner ->
-                    if (query.isEmpty()) Text(
-                        "Search messages", color = palette.secondaryText, fontSize = scaledSp(
+      IconButton(onClick = onClose) {
+        Icon(
+            Icons.AutoMirrored.Outlined.ArrowBack,
+            "Back",
+            tint = palette.primaryDark,
+        )
+      }
+      Icon(Icons.Outlined.Search, null, tint = palette.secondaryText)
+      BasicTextField(
+          value = query,
+          onValueChange = onQueryChange,
+          modifier = Modifier.weight(1f).padding(horizontal = 10.dp),
+          singleLine = true,
+          textStyle =
+              TextStyle(
+                  color = palette.primaryDark,
+                  fontSize =
+                      scaledSp(
+                          AppFontSearch,
+                          fontScale,
+                      ),
+              ),
+          cursorBrush = SolidColor(palette.primary),
+          decorationBox = { inner ->
+            if (query.isEmpty())
+                Text(
+                    "Search messages",
+                    color = palette.secondaryText,
+                    fontSize =
+                        scaledSp(
                             AppFontSearch,
-                            fontScale
-                        )
-                    )
-                    inner()
-                }
-            )
-            if (query.isNotEmpty()) IconButton(onClick = { onQueryChange("") }) {
-                Icon(
-                    Icons.Outlined.Close,
-                    "Clear",
-                    tint = palette.secondaryText
+                            fontScale,
+                        ),
                 )
-            }
-        }
+            inner()
+          },
+      )
+      if (query.isNotEmpty())
+          IconButton(onClick = { onQueryChange("") }) {
+            Icon(
+                Icons.Outlined.Close,
+                "Clear",
+                tint = palette.secondaryText,
+            )
+          }
     }
+  }
 }
