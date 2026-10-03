@@ -38,12 +38,13 @@ import com.nviswanathareddy.messagesexplorer.model.MessageSort
 import com.nviswanathareddy.messagesexplorer.model.SmsMessage
 import com.nviswanathareddy.messagesexplorer.utils.DarkPalette
 import com.nviswanathareddy.messagesexplorer.utils.LightPalette
-import com.nviswanathareddy.messagesexplorer.utils.detectCategory
+import com.nviswanathareddy.messagesexplorer.utils.TransactionType
+import com.nviswanathareddy.messagesexplorer.utils.detectTransaction
 import java.util.Calendar
 import java.util.Locale
 
 @Composable
-fun CalendarExplorerScreen(
+fun TransactionsExplorerScreen(
     darkMode: Boolean,
     fontScale: Float,
     refreshTrigger: Int,
@@ -146,7 +147,7 @@ fun CalendarExplorerScreen(
       hasContactsPermission,
       refreshTrigger,
   ) {
-    messages =
+    val dayMessages =
         if (hasSmsPermission) {
           readSmsForDate(
               context = context,
@@ -158,8 +159,16 @@ fun CalendarExplorerScreen(
         }
 
     logoRepository.buildSenderDomainMap(
-        messages = messages,
+        messages = dayMessages,
     )
+
+    messages = dayMessages.filter { message ->
+      detectTransaction(
+              sender = message.sender,
+              body = message.body,
+          )
+          .type != TransactionType.NONE
+    }
   }
 
   LaunchedEffect(
@@ -193,15 +202,7 @@ fun CalendarExplorerScreen(
                     message.body.contains(
                         searchQuery,
                         ignoreCase = true,
-                    ) ||
-                    detectCategory(
-                            message.sender,
-                            message.body,
-                        )
-                        .contains(
-                            searchQuery,
-                            ignoreCase = true,
-                        )
+                    )
               }
             }
 
@@ -236,7 +237,7 @@ fun CalendarExplorerScreen(
       containerColor = palette.background,
       bottomBar = {
         FooterSection(
-            selectedTab = FooterTab.CALENDAR,
+            selectedTab = FooterTab.TRANSACTIONS,
             onTabSelected = onTabSelected,
             palette = palette,
             fontScale = fontScale,
@@ -259,7 +260,7 @@ fun CalendarExplorerScreen(
         HeaderSection(
             palette = palette,
             fontScale = fontScale,
-            subtitle = "Calendar",
+            subtitle = "Transaction",
             onSearchClick = {
               searchOpen = true
             },

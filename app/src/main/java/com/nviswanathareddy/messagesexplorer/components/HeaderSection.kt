@@ -42,6 +42,7 @@ fun HeaderSection(
     fontScale: Float,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    subtitle: String = "Explorer",
 ) {
   Surface(
       modifier = Modifier.fillMaxWidth(),
@@ -50,7 +51,6 @@ fun HeaderSection(
   ) {
     Column(modifier = Modifier.fillMaxWidth()) {
       Spacer(modifier = Modifier.height(HeaderTopDividerSpacing))
-
       Row(
           modifier =
               Modifier.fillMaxWidth()
@@ -65,30 +65,19 @@ fun HeaderSection(
           Text(
               text = "Messages",
               color = palette.primaryDark,
-              fontSize =
-                  scaledSp(
-                      AppFontTopTitle,
-                      fontScale,
-                  ),
+              fontSize = scaledSp(AppFontTopTitle, fontScale),
               fontWeight = FontWeight.Bold,
               maxLines = 1,
           )
-
           Spacer(modifier = Modifier.height(1.dp))
-
           Text(
-              text = "Explorer",
+              text = subtitle,
               color = palette.primary,
-              fontSize =
-                  scaledSp(
-                      AppFontSubtitle,
-                      fontScale,
-                  ),
+              fontSize = scaledSp(AppFontSubtitle, fontScale),
               fontWeight = FontWeight.SemiBold,
               maxLines = 1,
           )
         }
-
         Row(verticalAlignment = Alignment.CenterVertically) {
           Surface(
               modifier =
@@ -107,9 +96,7 @@ fun HeaderSection(
               )
             }
           }
-
           Spacer(modifier = Modifier.width(5.dp))
-
           Surface(
               modifier =
                   Modifier.size(AppHeaderControlSize).clickable {
@@ -127,9 +114,7 @@ fun HeaderSection(
               )
             }
           }
-
           Spacer(modifier = Modifier.width(6.dp))
-
           Surface(
               modifier = Modifier.size(38.dp),
               shape = CircleShape,
@@ -139,19 +124,19 @@ fun HeaderSection(
               Text(
                   text = "JS",
                   color = Color.White,
-                  fontSize =
-                      scaledSp(
-                          11f,
-                          fontScale,
-                      ),
+                  fontSize = scaledSp(11f, fontScale),
                   fontWeight = FontWeight.Bold,
               )
             }
           }
         }
       }
-
-      HorizontalDivider(color = palette.secondaryText.copy(alpha = HeaderDividerColorAlpha))
+      HorizontalDivider(
+          color =
+              palette.secondaryText.copy(
+                  alpha = HeaderDividerColorAlpha,
+              ),
+      )
     }
   }
 }

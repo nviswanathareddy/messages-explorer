@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.outlined.AccountBalanceWallet
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -26,6 +27,7 @@ import com.nviswanathareddy.messagesexplorer.utils.scaledSp
 enum class FooterTab {
   MESSAGES,
   CALENDAR,
+  TRANSACTIONS,
 }
 
 @Composable
@@ -66,6 +68,17 @@ fun FooterSection(
           palette = palette,
           fontScale = fontScale,
       )
+      FooterItem(
+          modifier = Modifier.weight(1f),
+          icon = Icons.Outlined.AccountBalanceWallet,
+          label = "Transactions",
+          selected = selectedTab == FooterTab.TRANSACTIONS,
+          onClick = {
+            onTabSelected(FooterTab.TRANSACTIONS)
+          },
+          palette = palette,
+          fontScale = fontScale,
+      )
     }
   }
 }
@@ -86,12 +99,14 @@ private fun FooterItem(
       } else {
         Color.Transparent
       }
+
   val contentColor =
       if (selected) {
         Color(0xFF004AC6)
       } else {
         palette.primaryDark
       }
+
   Surface(
       modifier = modifier.height(56.dp).clickable(onClick = onClick),
       color = backgroundColor,

@@ -22,6 +22,7 @@ import com.nviswanathareddy.messagesexplorer.components.FooterTab
 import com.nviswanathareddy.messagesexplorer.dialogs.SettingsDialog
 import com.nviswanathareddy.messagesexplorer.screens.CalendarExplorerScreen
 import com.nviswanathareddy.messagesexplorer.screens.MessagesExplorerScreen
+import com.nviswanathareddy.messagesexplorer.screens.TransactionsExplorerScreen
 import com.nviswanathareddy.messagesexplorer.ui.theme.MessagesExplorerTheme
 import com.nviswanathareddy.messagesexplorer.utils.PreferenceDarkMode
 import com.nviswanathareddy.messagesexplorer.utils.PreferenceFontScale
@@ -66,9 +67,11 @@ private fun MessagesExplorerSettingsHost() {
     )
   }
   val systemDarkMode = isSystemInDarkTheme()
+
   var themeMode by remember {
     mutableStateOf(loadThemeMode(preferences))
   }
+
   var fontScale by remember {
     mutableFloatStateOf(
         preferences.getFloat(
@@ -77,25 +80,32 @@ private fun MessagesExplorerSettingsHost() {
         )
     )
   }
+
   var timeFormat by remember {
     mutableStateOf(loadTimeFormat(preferences))
   }
+
   var selectedTab by remember {
     mutableStateOf(FooterTab.MESSAGES)
   }
+
   var settingsDialogOpen by remember {
     mutableStateOf(false)
   }
+
   var refreshTrigger by remember {
     mutableIntStateOf(0)
   }
+
   val darkMode =
       when (themeMode) {
         AppThemeMode.LIGHT -> false
         AppThemeMode.DARK -> true
         AppThemeMode.SYSTEM -> systemDarkMode
       }
+
   val activity = context as? Activity
+
   SideEffect {
     activity?.window?.let { window ->
       val controller =
@@ -109,6 +119,7 @@ private fun MessagesExplorerSettingsHost() {
           androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
   }
+
   MessagesExplorerTheme(darkTheme = darkMode) {
     when (selectedTab) {
       FooterTab.MESSAGES -> {
@@ -124,6 +135,7 @@ private fun MessagesExplorerSettingsHost() {
             },
         )
       }
+
       FooterTab.CALENDAR -> {
         CalendarExplorerScreen(
             darkMode = darkMode,
@@ -137,7 +149,22 @@ private fun MessagesExplorerSettingsHost() {
             },
         )
       }
+
+      FooterTab.TRANSACTIONS -> {
+        TransactionsExplorerScreen(
+            darkMode = darkMode,
+            fontScale = fontScale,
+            refreshTrigger = refreshTrigger,
+            onSettingsClick = {
+              settingsDialogOpen = true
+            },
+            onTabSelected = { tab ->
+              selectedTab = tab
+            },
+        )
+      }
     }
+
     if (settingsDialogOpen) {
       SettingsDialog(
           darkMode = darkMode,
@@ -192,12 +219,15 @@ private fun MessagesExplorerSettingsHost() {
   }
 }
 
-private fun loadThemeMode(preferences: android.content.SharedPreferences): AppThemeMode {
+private fun loadThemeMode(
+    preferences: android.content.SharedPreferences,
+): AppThemeMode {
   val savedTheme =
       preferences.getString(
           PreferenceThemeMode,
           null,
       )
+
   if (savedTheme != null) {
     return try {
       AppThemeMode.valueOf(savedTheme)
@@ -205,6 +235,7 @@ private fun loadThemeMode(preferences: android.content.SharedPreferences): AppTh
       AppThemeMode.LIGHT
     }
   }
+
   return if (
       preferences.getBoolean(
           PreferenceDarkMode,
@@ -217,12 +248,15 @@ private fun loadThemeMode(preferences: android.content.SharedPreferences): AppTh
   }
 }
 
-private fun loadTimeFormat(preferences: android.content.SharedPreferences): AppTimeFormat {
+private fun loadTimeFormat(
+    preferences: android.content.SharedPreferences,
+): AppTimeFormat {
   val savedFormat =
       preferences.getString(
           PreferenceTimeFormat,
           null,
       )
+
   return if (savedFormat != null) {
     try {
       AppTimeFormat.valueOf(savedFormat)
